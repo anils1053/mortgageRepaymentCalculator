@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Mortgage Calculator</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Mortgage Calculator</h1>
+        <div class="mode-switch">
+            <button id="singleMode" class="active">Single Calculator</button>
+            <button id="compareMode">Compare Scenarios</button>
+            <button id="ratesMode">Current Rates</button>
+        </div>
+        
+        <div id="singleCalculator" class="calculator-grid">
+            <div class="inputs-section">
+                <div class="input-group">
+                    <label for="loanAmount">Loan Amount ($)</label>
+                    <div class="input-control">
+                        <input type="text" id="loanAmountText" class="number-input" value="200,000">
+                        <input type="range" id="loanAmount" min="0" max="10000000" step="1000" value="200000">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="interestRate">Interest Rate (%)</label>
+                    <div class="input-control">
+                        <input type="number" id="interestRateText" class="number-input" value="5.00" step="0.01" min="0" max="15">
+                        <input type="range" id="interestRate" min="0" max="15" step="0.01" value="5.00">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="loanTerm">Loan Term</label>
+                    <div class="input-control">
+                        <input type="number" id="loanTermText" class="number-input" value="25" step="0.1" min="1" max="30">
+                        <input type="range" id="loanTerm" min="1" max="30" step="0.1" value="25">
+                        <span id="loanTermDisplay" class="term-display"></span>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="oneOffPayment">One-off Payment ($)</label>
+                    <p class="help-text">See the impact of one-off payment on your mortgage</p>
+                    <div class="input-control">
+                        <input type="text" id="oneOffPaymentText" class="number-input" value="0">
+                        <input type="range" id="oneOffPayment" min="0" max="1000000" step="1000" value="0">
+                    </div>
+                </div>
+            </div>
+
+            <div class="results-section">
+                <div class="result-card payment-card">
+                    <h3>Payment Frequency Options</h3>
+                    <div class="payment-options">
+                        <div class="payment-option">
+                            <div class="payment-label">
+                                <span class="frequency">Monthly</span>
+                                <span class="frequency-detail">(12 payments/year)</span>
+                            </div>
+                            <p id="monthlyPayment">$0</p>
+                        </div>
+                        <div class="payment-option">
+                            <div class="payment-label">
+                                <span class="frequency">Fortnightly</span>
+                                <span class="frequency-detail">(26 payments/year)</span>
+                            </div>
+                            <p id="fortnightlyPayment">$0</p>
+                        </div>
+                        <div class="payment-option">
+                            <div class="payment-label">
+                                <span class="frequency">Weekly</span>
+                                <span class="frequency-detail">(52 payments/year)</span>
+                            </div>
+                            <p id="weeklyPayment">$0</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="result-card">
+                    <h3>Total Interest</h3>
+                    <p id="totalInterest">$0</p>
+                </div>
+                <div class="result-card">
+                    <h3>Total Cost</h3>
+                    <p id="totalCost">$0</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="singleChart" class="chart-container">
+            <canvas id="mortgageChart"></canvas>
+        </div>
+
+        <div id="currentRates" class="rates-container hidden">
+            <div class="rates-header">
+                <h2>Current Mortgage Rates</h2>
+                <p>Compare the latest rates from major NZ banks</p>
+            </div>
+            <div class="rates-grid">
+                <div class="rates-row header">
+                    <div class="bank-col">Bank</div>
+                    <div class="rate-col">6 Months</div>
+                    <div class="rate-col">1 Year</div>
+                    <div class="rate-col">2 Years</div>
+                    <div class="rate-col">3 Years</div>
+                    <div class="rate-col">Floating</div>
+                </div>
+                <div id="ratesContent"></div>
+            </div>
+            <div class="rates-footer">
+                <p>* Special rates may have conditions. Contact the bank for details.</p>
+                <p>Last updated: <span id="lastUpdated"></span></p>
+            </div>
+        </div>
+
+        <div id="compareCalculator" class="calculator-grid compare-mode hidden">
+            <div class="comparison-guide">
+                <h2>Compare Mortgage Scenarios</h2>
+                <p>Compare two different loan scenarios to find the best option for you. See how changes in loan amount, interest rate, or term length affect your payments and total costs. Higher values are highlighted in red, lower in green.</p>
+            </div>
+            <div class="scenario-container">
+                <h2>Scenario 1</h2>
+                <div class="inputs-section">
+                    <div class="input-group">
+                        <label for="loanAmount1">Loan Amount ($)</label>
+                        <div class="input-control">
+                            <input type="text" id="loanAmount1Text" class="number-input" value="200,000">
+                            <input type="range" id="loanAmount1" min="0" max="10000000" step="1000" value="200000">
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="interestRate1">Interest Rate (%)</label>
+                        <div class="input-control">
+                            <input type="number" id="interestRate1Text" class="number-input" value="5.00" step="0.01" min="0" max="15">
+                            <input type="range" id="interestRate1" min="0" max="15" step="0.01" value="5.00">
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="loanTerm1">Loan Term</label>
+                        <div class="input-control">
+                            <input type="number" id="loanTerm1Text" class="number-input" value="25" step="0.1" min="1" max="30">
+                            <input type="range" id="loanTerm1" min="1" max="30" step="0.1" value="25">
+                            <span id="loanTermDisplay1" class="term-display"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="scenario-container">
+                <h2>Scenario 2</h2>
+                <div class="inputs-section">
+                    <div class="input-group">
+                        <label for="loanAmount2">Loan Amount ($)</label>
+                        <div class="input-control">
+                            <input type="text" id="loanAmount2Text" class="number-input" value="200,000">
+                            <input type="range" id="loanAmount2" min="0" max="10000000" step="1000" value="200000">
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="interestRate2">Interest Rate (%)</label>
+                        <div class="input-control">
+                            <input type="number" id="interestRate2Text" class="number-input" value="5.00" step="0.01" min="0" max="15">
+                            <input type="range" id="interestRate2" min="0" max="15" step="0.01" value="5.00">
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="loanTerm2">Loan Term</label>
+                        <div class="input-control">
+                            <input type="number" id="loanTerm2Text" class="number-input" value="25" step="0.1" min="1" max="30">
+                            <input type="range" id="loanTerm2" min="1" max="30" step="0.1" value="25">
+                            <span id="loanTermDisplay2" class="term-display"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="comparison-results">
+                <div class="comparison-card">
+                    <h3>Payment Options</h3>
+                    <div class="payment-comparison">
+                        <div class="payment-type">
+                            <h4>
+                                Monthly (12 payments/year)
+                                <button class="toggle-btn" data-target="monthly-payments">Hide</button>
+                            </h4>
+                            <div class="comparison-row" id="monthly-payments">
+                                <div class="scenario">
+                                    <span>Scenario 1:</span>
+                                    <p id="monthlyPayment1">$0</p>
+                                </div>
+                                <div class="scenario">
+                                    <span>Scenario 2:</span>
+                                    <p id="monthlyPayment2">$0</p>
+                                </div>
+                                <div class="difference">
+                                    <span>Difference:</span>
+                                    <p id="monthlyDiff">$0</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="payment-type">
+                            <h4>
+                                Fortnightly (26 payments/year)
+                                <button class="toggle-btn" data-target="fortnightly-payments">Hide</button>
+                            </h4>
+                            <div class="comparison-row" id="fortnightly-payments">
+                                <div class="scenario">
+                                    <span>Scenario 1:</span>
+                                    <p id="fortnightlyPayment1">$0</p>
+                                </div>
+                                <div class="scenario">
+                                    <span>Scenario 2:</span>
+                                    <p id="fortnightlyPayment2">$0</p>
+                                </div>
+                                <div class="difference">
+                                    <span>Difference:</span>
+                                    <p id="fortnightlyDiff">$0</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="payment-type">
+                            <h4>
+                                Weekly (52 payments/year)
+                                <button class="toggle-btn" data-target="weekly-payments">Hide</button>
+                            </h4>
+                            <div class="comparison-row" id="weekly-payments">
+                                <div class="scenario">
+                                    <span>Scenario 1:</span>
+                                    <p id="weeklyPayment1">$0</p>
+                                </div>
+                                <div class="scenario">
+                                    <span>Scenario 2:</span>
+                                    <p id="weeklyPayment2">$0</p>
+                                </div>
+                                <div class="difference">
+                                    <span>Difference:</span>
+                                    <p id="weeklyDiff">$0</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="comparison-card">
+                    <h3>Total Interest</h3>
+                    <div class="comparison-row">
+                        <div class="scenario">
+                            <span>Scenario 1:</span>
+                            <p id="totalInterest1">$0</p>
+                        </div>
+                        <div class="scenario">
+                            <span>Scenario 2:</span>
+                            <p id="totalInterest2">$0</p>
+                        </div>
+                        <div class="difference">
+                            <span>Difference:</span>
+                            <p id="interestDiff">$0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="comparison-card">
+                    <h3>Total Cost</h3>
+                    <div class="comparison-row">
+                        <div class="scenario">
+                            <span>Scenario 1:</span>
+                            <p id="totalCost1">$0</p>
+                        </div>
+                        <div class="scenario">
+                            <span>Scenario 2:</span>
+                            <p id="totalCost2">$0</p>
+                        </div>
+                        <div class="difference">
+                            <span>Difference:</span>
+                            <p id="costDiff">$0</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="faq-section">
+            <h2>Frequently Asked Questions</h2>
+            
+            <div class="faq-item">
+                <h3>How do I use the loan amount calculator?</h3>
+                <p>Enter your desired loan amount using either the slider or the number input. The calculator automatically updates all calculations in real-time. The maximum loan amount is $10,000,000.</p>
+            </div>
+
+            <div class="faq-item">
+                <h3>What do the different interest rates mean?</h3>
+                <p>The interest rate is the annual percentage rate (APR) charged by your lender. For example, 5% means you'll pay 5% of your remaining loan balance in interest each year. You can adjust this using the slider or input field up to 15%.</p>
+            </div>
+
+            <div class="faq-item">
+                <h3>How do payment frequencies work?</h3>
+                <p>The calculator shows three payment options:</p>
+                <ul>
+                    <li><strong>Monthly:</strong> 12 payments per year (standard payment schedule)</li>
+                    <li><strong>Fortnightly:</strong> 26 payments per year (every two weeks)</li>
+                    <li><strong>Weekly:</strong> 52 payments per year (more frequent smaller payments)</li>
+                </ul>
+                <p>More frequent payments can reduce your total interest cost over the life of the loan.</p>
+            </div>
+
+            <div class="faq-item">
+                <h3>What is the comparison mode?</h3>
+                <p>Comparison mode lets you compare two different loan scenarios side by side. This is useful for:</p>
+                <ul>
+                    <li>Comparing different loan terms (e.g., 15 vs 30 years)</li>
+                    <li>Evaluating different interest rates</li>
+                    <li>Comparing different loan amounts</li>
+                </ul>
+                <p>Click the "Compare Scenarios" button at the top to access this feature.</p>
+            </div>
+
+            <div class="faq-item">
+                <h3>How do I read the amortization chart?</h3>
+                <p>The chart shows two key pieces of information over time:</p>
+                <ul>
+                    <li><strong>Remaining Principal (Blue):</strong> Shows how much you still owe on your loan</li>
+                    <li><strong>Cumulative Interest (Dark Blue):</strong> Shows the total interest you've paid</li>
+                </ul>
+                <p>The X-axis shows years, while the Y-axis shows dollar amounts.</p>
+            </div>
+
+            <div class="faq-item">
+                <h3>What is a one-off payment?</h3>
+                <p>A one-off payment is an extra lump sum payment made to your loan. Adding a one-off payment:</p>
+                <ul>
+                    <li>Reduces your loan principal immediately</li>
+                    <li>Decreases the total interest you'll pay</li>
+                    <li>Can shorten your loan term</li>
+                </ul>
+                <p>Use this feature to see how extra payments could affect your loan.</p>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
