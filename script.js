@@ -79,7 +79,7 @@ function updateChart(principal, annualRate, years) {
             plugins: {
                 title: {
                     display: true,
-                    text: 'Mortgage Amortization Over Time'
+                    text: 'Mortgage Amortisation Over Time'
                 }
             },
             scales: {
